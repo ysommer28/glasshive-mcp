@@ -42,7 +42,7 @@ A [Model Context Protocol (MCP)](https://modelcontextprotocol.info/) server for 
 ## Installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/glasshive-mcp.git
+git clone https://github.com/ysommer28/glasshive-mcp.git
 cd glasshive-mcp
 npm install
 npm run build
