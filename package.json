@@ -1,0 +1,28 @@
+{
+  "name": "glasshive-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for the GlassHive partner API — manage companies, contacts, opportunities, and campaigns",
+  "type": "module",
+  "bin": {
+    "glasshive-mcp": "./build/index.js"
+  },
+  "scripts": {
+    "build": "tsc && chmod 755 build/index.js",
+    "dev": "tsc --watch",
+    "start": "node build/index.js"
+  },
+  "files": ["build"],
+  "keywords": ["mcp", "glasshive", "crm", "modelcontextprotocol"],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.10.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
