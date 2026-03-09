@@ -130,4 +130,54 @@ export function registerContactTools(server: McpServer): void {
       } catch (e) { return err(e); }
     }
   );
+
+  server.registerTool(
+    "get_contact_lists",
+    {
+      description: "Get all contact lists that a contact belongs to",
+      inputSchema: {
+        id: z.number().int().describe("Contact ID"),
+      },
+    },
+    async ({ id }) => {
+      try {
+        const data = await ghRequest("GET", `/contacts/${id}/lists`);
+        return ok(data);
+      } catch (e) { return err(e); }
+    }
+  );
+
+  server.registerTool(
+    "add_contact_to_lists",
+    {
+      description: "Add a contact to one or more contact lists",
+      inputSchema: {
+        id: z.number().int().describe("Contact ID"),
+        listIds: z.array(z.number().int()).min(1).describe("Array of list IDs to add the contact to"),
+      },
+    },
+    async ({ id, listIds }) => {
+      try {
+        const data = await ghRequest("PUT", `/contacts/${id}/lists`, { listIds });
+        return ok(data);
+      } catch (e) { return err(e); }
+    }
+  );
+
+  server.registerTool(
+    "remove_contact_from_list",
+    {
+      description: "Remove a contact from a specific contact list",
+      inputSchema: {
+        id: z.number().int().describe("Contact ID"),
+        listId: z.number().int().describe("List ID to remove the contact from"),
+      },
+    },
+    async ({ id, listId }) => {
+      try {
+        const data = await ghRequest("DELETE", `/contacts/${id}/lists/${listId}`);
+        return ok(data);
+      } catch (e) { return err(e); }
+    }
+  );
 }

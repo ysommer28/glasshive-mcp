@@ -122,4 +122,84 @@ export function registerOpportunityTools(server: McpServer): void {
       } catch (e) { return err(e); }
     }
   );
+
+  server.registerTool(
+    "add_opportunity_line_item",
+    {
+      description: "Add a line item to an opportunity",
+      inputSchema: {
+        opportunityId: z.number().int().describe("Opportunity ID"),
+        quantity: z.number().optional().describe("Quantity"),
+        unitPrice: z.number().optional().describe("Unit price"),
+        unitCost: z.number().optional().describe("Unit cost"),
+        unitDiscount: z.number().optional().describe("Unit discount"),
+        billingCycle: z.number().int().optional().describe("Billing cycle"),
+        termInMonths: z.number().int().optional().describe("Term in months"),
+        solutionId: z.number().int().optional().describe("Solution ID to associate with this line item"),
+      },
+    },
+    async ({ opportunityId, quantity, unitPrice, unitCost, unitDiscount, billingCycle, termInMonths, solutionId }) => {
+      try {
+        const body: Record<string, unknown> = {};
+        if (quantity !== undefined) body.Quantity = quantity;
+        if (unitPrice !== undefined) body.UnitPrice = unitPrice;
+        if (unitCost !== undefined) body.UnitCost = unitCost;
+        if (unitDiscount !== undefined) body.UnitDiscount = unitDiscount;
+        if (billingCycle !== undefined) body.BillingCycle = billingCycle;
+        if (termInMonths !== undefined) body.TermInMonths = termInMonths;
+        if (solutionId !== undefined) body.SolutionId = solutionId;
+        const data = await ghRequest("POST", `/opportunities/${opportunityId}/opportunityLineItems`, body);
+        return ok(data);
+      } catch (e) { return err(e); }
+    }
+  );
+
+  server.registerTool(
+    "update_opportunity_line_item",
+    {
+      description: "Update a line item on an opportunity",
+      inputSchema: {
+        opportunityId: z.number().int().describe("Opportunity ID"),
+        lineItemId: z.number().int().describe("Line item ID to update"),
+        quantity: z.number().optional().describe("Quantity"),
+        unitPrice: z.number().optional().describe("Unit price"),
+        unitCost: z.number().optional().describe("Unit cost"),
+        unitDiscount: z.number().optional().describe("Unit discount"),
+        billingCycle: z.number().int().optional().describe("Billing cycle"),
+        termInMonths: z.number().int().optional().describe("Term in months"),
+        solutionId: z.number().int().optional().describe("Solution ID"),
+      },
+    },
+    async ({ opportunityId, lineItemId, quantity, unitPrice, unitCost, unitDiscount, billingCycle, termInMonths, solutionId }) => {
+      try {
+        const body: Record<string, unknown> = {};
+        if (quantity !== undefined) body.Quantity = quantity;
+        if (unitPrice !== undefined) body.UnitPrice = unitPrice;
+        if (unitCost !== undefined) body.UnitCost = unitCost;
+        if (unitDiscount !== undefined) body.UnitDiscount = unitDiscount;
+        if (billingCycle !== undefined) body.BillingCycle = billingCycle;
+        if (termInMonths !== undefined) body.TermInMonths = termInMonths;
+        if (solutionId !== undefined) body.SolutionId = solutionId;
+        const data = await ghRequest("PATCH", `/opportunities/${opportunityId}/opportunityLineItems/${lineItemId}`, body);
+        return ok(data);
+      } catch (e) { return err(e); }
+    }
+  );
+
+  server.registerTool(
+    "delete_opportunity_line_item",
+    {
+      description: "Delete a line item from an opportunity",
+      inputSchema: {
+        opportunityId: z.number().int().describe("Opportunity ID"),
+        lineItemId: z.number().int().describe("Line item ID to delete"),
+      },
+    },
+    async ({ opportunityId, lineItemId }) => {
+      try {
+        const data = await ghRequest("DELETE", `/opportunities/${opportunityId}/opportunityLineItems/${lineItemId}`);
+        return ok(data);
+      } catch (e) { return err(e); }
+    }
+  );
 }
