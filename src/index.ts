@@ -5,6 +5,7 @@ import { registerCompanyTools } from "./tools/companies.js";
 import { registerContactTools } from "./tools/contacts.js";
 import { registerOpportunityTools } from "./tools/opportunities.js";
 import { registerCampaignTools } from "./tools/campaigns.js";
+import { registerListTools } from "./tools/lists.js";
 
 const server = new McpServer({
   name: "glasshive-mcp",
@@ -15,6 +16,7 @@ registerCompanyTools(server);
 registerContactTools(server);
 registerOpportunityTools(server);
 registerCampaignTools(server);
+registerListTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
