@@ -112,4 +112,20 @@ export function registerListTools(server: McpServer): void {
       } catch (e) { return err(e); }
     }
   );
+
+  server.registerTool(
+    "delete_list",
+    {
+      description: "Delete a contact list by ID",
+      inputSchema: {
+        id: z.number().int().describe("List ID to delete"),
+      },
+    },
+    async ({ id }) => {
+      try {
+        const data = await ghRequest("DELETE", `/lists/${id}`);
+        return ok(data);
+      } catch (e) { return err(e); }
+    }
+  );
 }

@@ -124,6 +124,22 @@ export function registerOpportunityTools(server: McpServer): void {
   );
 
   server.registerTool(
+    "delete_opportunity",
+    {
+      description: "Delete an opportunity by ID",
+      inputSchema: {
+        id: z.number().int().describe("Opportunity ID to delete"),
+      },
+    },
+    async ({ id }) => {
+      try {
+        const data = await ghRequest("DELETE", `/opportunities/${id}`);
+        return ok(data);
+      } catch (e) { return err(e); }
+    }
+  );
+
+  server.registerTool(
     "add_opportunity_line_item",
     {
       description: "Add a line item to an opportunity",

@@ -134,4 +134,20 @@ export function registerCompanyTools(server: McpServer): void {
       } catch (e) { return err(e); }
     }
   );
+
+  server.registerTool(
+    "delete_company",
+    {
+      description: "Delete a company by ID",
+      inputSchema: {
+        id: z.number().int().describe("Company ID to delete"),
+      },
+    },
+    async ({ id }) => {
+      try {
+        const data = await ghRequest("DELETE", `/companies/${id}`);
+        return ok(data);
+      } catch (e) { return err(e); }
+    }
+  );
 }

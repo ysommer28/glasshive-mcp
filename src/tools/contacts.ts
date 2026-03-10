@@ -132,6 +132,44 @@ export function registerContactTools(server: McpServer): void {
   );
 
   server.registerTool(
+    "get_contact_opportunities",
+    {
+      description: "Get all opportunities associated with a contact",
+      inputSchema: {
+        id: z.number().int().describe("Contact ID"),
+        page: z.number().int().min(0).optional().describe("Page number (0-indexed, default 0)"),
+        limit: z.number().int().min(1).max(100).optional().describe("Results per page (default 10, max 100)"),
+      },
+    },
+    async ({ id, page, limit }) => {
+      try {
+        const params = new URLSearchParams();
+        if (page !== undefined) params.set("page", String(page));
+        if (limit) params.set("limit", String(limit));
+        const qs = params.toString() ? `?${params}` : "";
+        const data = await ghRequest("GET", `/contacts/${id}/opportunities${qs}`);
+        return ok(data);
+      } catch (e) { return err(e); }
+    }
+  );
+
+  server.registerTool(
+    "delete_contact",
+    {
+      description: "Delete a contact by ID",
+      inputSchema: {
+        id: z.number().int().describe("Contact ID to delete"),
+      },
+    },
+    async ({ id }) => {
+      try {
+        const data = await ghRequest("DELETE", `/contacts/${id}`);
+        return ok(data);
+      } catch (e) { return err(e); }
+    }
+  );
+
+  server.registerTool(
     "get_contact_lists",
     {
       description: "Get all contact lists that a contact belongs to",
