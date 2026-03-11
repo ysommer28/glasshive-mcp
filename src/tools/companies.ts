@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { ghRequest, GlassHiveError } from "../client.js";
+import { cacheCompany, searchCompanies } from "../cache.js";
 
 function ok(data: unknown): { content: [{ type: "text"; text: string }] } {
   return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
@@ -86,7 +87,12 @@ export function registerCompanyTools(server: McpServer): void {
         if (isAccount !== undefined) body.IsAccount = isAccount;
         if (employeeCount !== undefined) body.EmployeeCount = employeeCount;
         if (deviceCount !== undefined) body.DeviceCount = deviceCount;
-        const data = await ghRequest("POST", "/companies", body);
+        const data = await ghRequest<{ data?: { Id?: number } }>("POST", "/companies", body);
+        // Cache the new company so it can be found by name later
+        const newId = data?.data?.Id;
+        if (newId) {
+          cacheCompany({ id: newId, name, email, website });
+        }
         return ok(data);
       } catch (e) { return err(e); }
     }
@@ -148,6 +154,50 @@ export function registerCompanyTools(server: McpServer): void {
         const data = await ghRequest("DELETE", `/companies/${id}`);
         return ok(data);
       } catch (e) { return err(e); }
+    }
+  );
+
+  server.registerTool(
+    "search_companies",
+    {
+      description:
+        "Search for companies by name, email, or website using the local cache. " +
+        "IMPORTANT: The GlassHive API returns only IDs — this cache is the only way to look up companies by name. " +
+        "Companies are added to the cache when created via create_company or registered via register_company. " +
+        "If a company is not found, ask the user for its ID and use register_company to add it.",
+      inputSchema: {
+        query: z.string().min(1).describe("Company name, email, or website to search for (case-insensitive substring match)"),
+      },
+    },
+    async ({ query }) => {
+      const results = searchCompanies(query);
+      if (results.length === 0) {
+        return ok({
+          message: `No companies found matching "${query}" in local cache. If you know the GlassHive ID, use register_company to add it.`,
+          results: [],
+        });
+      }
+      return ok({ count: results.length, results });
+    }
+  );
+
+  server.registerTool(
+    "register_company",
+    {
+      description:
+        "Manually register an existing GlassHive company in the local search cache. " +
+        "Use this for companies that existed before this MCP was set up. " +
+        "After registering, the company can be found via search_companies.",
+      inputSchema: {
+        id: z.number().int().describe("Company ID (from GlassHive)"),
+        name: z.string().describe("Company name"),
+        email: z.string().email().optional().describe("Company email"),
+        website: z.string().url().optional().describe("Company website URL"),
+      },
+    },
+    async ({ id, name, email, website }) => {
+      cacheCompany({ id, name, email, website });
+      return ok({ message: `Company "${name}" (ID: ${id}) registered in local cache.` });
     }
   );
 }

@@ -19,29 +19,35 @@ MCP (Model Context Protocol) is an open standard that lets AI assistants call ex
 
 ---
 
-## Tools Reference (47 tools)
+## Tools Reference (51 tools)
+
+> **Note on the GlassHive API:** The Partner v1 API returns only `{Id: ...}` for all list and GET endpoints — no names, emails, or other fields. The `search_contacts`, `search_companies`, `register_contact`, and `register_company` tools work around this using a local cache (`~/.glasshive-mcp-cache.json`). Contacts and companies created via this MCP are cached automatically. For pre-existing records, use the `register_*` tools once to add them.
 
 ### Companies
 | Tool | Description |
 |------|-------------|
 | `get_companies` | List companies with optional pagination |
 | `get_company` | Get a single company by ID |
-| `create_company` | Create a new company |
+| `create_company` | Create a new company (auto-cached) |
 | `update_company` | Update an existing company |
 | `delete_company` | Delete a company |
+| `search_companies` | Search companies by name/email/website (local cache) |
+| `register_company` | Register an existing company in the local search cache |
 
 ### Contacts
 | Tool | Description |
 |------|-------------|
 | `get_contacts` | List contacts with optional pagination |
 | `get_contact` | Get a single contact by ID |
-| `create_contact` | Create a new contact |
+| `create_contact` | Create a new contact (auto-cached) |
 | `update_contact` | Update an existing contact |
 | `delete_contact` | Delete a contact |
 | `get_contact_opportunities` | Get all opportunities for a contact |
 | `get_contact_lists` | Get all lists a contact belongs to |
 | `add_contact_to_lists` | Add a contact to one or more lists |
 | `remove_contact_from_list` | Remove a contact from a list |
+| `search_contacts` | Search contacts by name/email/company (local cache) |
+| `register_contact` | Register an existing contact in the local search cache |
 
 ### Opportunities
 | Tool | Description |

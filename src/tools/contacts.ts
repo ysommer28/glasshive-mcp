@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { ghRequest, GlassHiveError } from "../client.js";
+import { cacheContact, searchContacts } from "../cache.js";
 
 function ok(data: unknown): { content: [{ type: "text"; text: string }] } {
   return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
@@ -90,7 +91,12 @@ export function registerContactTools(server: McpServer): void {
         if (zipCode !== undefined) body.ZipCode = zipCode;
         if (countryCode !== undefined) body.CountryCode = countryCode;
         if (linkedinUrl !== undefined) body.LinkedinUrl = linkedinUrl;
-        const data = await ghRequest("POST", "/contacts", body);
+        const data = await ghRequest<{ data?: { Id?: number } }>("POST", "/contacts", body);
+        // Cache the new contact so it can be found by name/email later
+        const newId = data?.data?.Id;
+        if (newId) {
+          cacheContact({ id: newId, firstName, lastName, email, companyId });
+        }
         return ok(data);
       } catch (e) { return err(e); }
     }
@@ -216,6 +222,52 @@ export function registerContactTools(server: McpServer): void {
         const data = await ghRequest("DELETE", `/contacts/${id}/lists/${listId}`);
         return ok(data);
       } catch (e) { return err(e); }
+    }
+  );
+
+  server.registerTool(
+    "search_contacts",
+    {
+      description:
+        "Search for contacts by name, email, or company using the local cache. " +
+        "IMPORTANT: The GlassHive API returns only IDs — this cache is the only way to look up contacts by name/email. " +
+        "Contacts are added to the cache when created via create_contact or registered via register_contact. " +
+        "If a contact is not found, ask the user for their ID and use register_contact to add them.",
+      inputSchema: {
+        query: z.string().min(1).describe("Name, email, or company name to search for (case-insensitive substring match)"),
+      },
+    },
+    async ({ query }) => {
+      const results = searchContacts(query);
+      if (results.length === 0) {
+        return ok({
+          message: `No contacts found matching "${query}" in local cache. If you know their GlassHive ID, use register_contact to add them.`,
+          results: [],
+        });
+      }
+      return ok({ count: results.length, results });
+    }
+  );
+
+  server.registerTool(
+    "register_contact",
+    {
+      description:
+        "Manually register an existing GlassHive contact in the local search cache. " +
+        "Use this for contacts that existed before this MCP was set up. " +
+        "After registering, the contact can be found via search_contacts.",
+      inputSchema: {
+        id: z.number().int().describe("Contact ID (from GlassHive)"),
+        firstName: z.string().describe("First name"),
+        lastName: z.string().describe("Last name"),
+        email: z.string().email().optional().describe("Email address"),
+        companyId: z.number().int().optional().describe("Company ID"),
+        companyName: z.string().optional().describe("Company name (for display/search)"),
+      },
+    },
+    async ({ id, firstName, lastName, email, companyId, companyName }) => {
+      cacheContact({ id, firstName, lastName, email, companyId, companyName });
+      return ok({ message: `Contact ${firstName} ${lastName} (ID: ${id}) registered in local cache.` });
     }
   );
 }
