@@ -78,7 +78,7 @@ export function registerActivityTools(server: McpServer): void {
       description: "Log a call activity for a contact",
       inputSchema: {
         contactId: z.number().int().describe("Contact ID the call was with"),
-        userId: z.number().int().describe("User ID who made the call"),
+        userId: z.string().uuid().describe("User UUID who made the call (GlassHive users are UUID-keyed; get from get_users)"),
         details: z.string().optional().describe("Call notes / details"),
         activityDate: z.string().optional().describe("Date/time of the call (ISO 8601)"),
         isPinned: z.boolean().optional().describe("Pin this activity to the top"),
@@ -102,7 +102,7 @@ export function registerActivityTools(server: McpServer): void {
       description: "Log an email activity for a contact",
       inputSchema: {
         contactId: z.number().int().describe("Contact ID the email was sent to/from"),
-        userId: z.number().int().describe("User ID who sent the email"),
+        userId: z.string().uuid().describe("User UUID who sent the email (GlassHive users are UUID-keyed; get from get_users)"),
         details: z.string().optional().describe("Email notes / details"),
         activityDate: z.string().optional().describe("Date/time of the email (ISO 8601)"),
         isPinned: z.boolean().optional().describe("Pin this activity to the top"),
@@ -126,7 +126,7 @@ export function registerActivityTools(server: McpServer): void {
       description: "Log a note activity for a contact",
       inputSchema: {
         contactId: z.number().int().describe("Contact ID the note is about"),
-        userId: z.number().int().describe("User ID who wrote the note"),
+        userId: z.string().uuid().describe("User UUID who wrote the note (GlassHive users are UUID-keyed; get from get_users)"),
         details: z.string().optional().describe("Note content"),
         activityDate: z.string().optional().describe("Date/time of the note (ISO 8601)"),
         isPinned: z.boolean().optional().describe("Pin this activity to the top"),
